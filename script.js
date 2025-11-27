@@ -21,8 +21,10 @@ const PALAVRAS_CENSURADAS = ['feio', 'bobo', 'chato', 'idiota', 'merda', 'puta',
 
 
 const INTERVALO_QUEDA_MS = 50;
-const VELOCIDADE_INICIAL_QUEDA = 1.0; 
-const INTERVALO_INICIAL_SPAWN_MS = 2500;
+// >>> AUMENTANDO A VELOCIDADE INICIAL
+const VELOCIDADE_INICIAL_QUEDA = 2.0; 
+// >>> REDUZINDO O TEMPO DE SPAWN
+const INTERVALO_INICIAL_SPAWN_MS = 1500; 
 const DISTANCIA_MAXIMA_QUEDA = 600; 
 
 let contadorPD = 0;
@@ -57,10 +59,11 @@ function obterPalavraAleatoria() {
 }
 
 function aumentarDificuldade() {
-    velocidadeQuedaAtual = Math.min(3.5, VELOCIDADE_INICIAL_QUEDA + Math.floor(contadorPD / 5) * 0.25); 
+    // Ajusta a velocidade e o intervalo de spawn baseado na pontuação
+    velocidadeQuedaAtual = Math.min(4.5, VELOCIDADE_INICIAL_QUEDA + Math.floor(contadorPD / 5) * 0.4); 
     
     const fatorReducao = Math.floor(contadorPD / 5) * 150;
-    intervaloSpawnAtual = Math.max(800, INTERVALO_INICIAL_SPAWN_MS - fatorReducao);
+    intervaloSpawnAtual = Math.max(700, INTERVALO_INICIAL_SPAWN_MS - fatorReducao);
     
     clearInterval(intervaloSpawn);
     intervaloSpawn = setInterval(criarNovaPalavra, intervaloSpawnAtual);
@@ -183,13 +186,7 @@ function fimDeJogo() {
 
 // --- FUNÇÕES DE RANKING E CENSURA LOCAL ---
 
-/**
- * Verifica se o nome contém alguma palavra inapropriada (censura local).
- * @param {string} nome 
- * @returns {boolean} Retorna true se inapropriado (censurado), false caso contrário.
- */
 function verificarCensuraLocal(nome) {
-    // Normaliza o nome para minúsculas e remove caracteres não alfabéticos/numéricos
     const nomeLowerCase = nome.toLowerCase().replace(/[^a-z0-9]/g, ''); 
     
     for (const palavra of PALAVRAS_CENSURADAS) {
@@ -216,6 +213,13 @@ function carregarRanking() {
 function mostrarRanking() {
     dadosRanking = carregarRanking();
     LISTA_RANKING.innerHTML = '';
+    
+    if (dadosRanking.length === 0) {
+        const li = document.createElement('li');
+        li.textContent = 'Nenhuma pontuação salva ainda.';
+        LISTA_RANKING.appendChild(li);
+        return;
+    }
     
     dadosRanking.forEach((jogador, index) => {
         const li = document.createElement('li');
@@ -250,6 +254,7 @@ function processarPontuacao() {
         salvarResultado(nome, contadorPD);
     }
     
+    // Correção: Garante que o menu de ranking seja exibido e o jogo não seja reiniciado
     mostrarRanking(); 
     MENU_RANKING.classList.add('visible'); 
     
@@ -299,7 +304,6 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
                 spansCaindo[i].classList.remove('correct');
                 spansAlvo[i].classList.add('incorrect');
                 
-                // Feedback de erro (tremer)
                 dadosPalavraAtual.elemento.style.animation = 'shake 0.1s ease-in-out';
                 setTimeout(() => dadosPalavraAtual.elemento.style.animation = '', 100); 
                 e.target.value = entrada.slice(0, i); 
@@ -336,7 +340,8 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
             const textoLimpo = palavrasNaoDigitadas[0].textContent.replace(/\s/g, '');
             focarPalavra(palavrasNaoDigitadas[0], textoLimpo);
         } else {
-            INPUT_DIGITACAO.placeholder = "Esperando palavra...";
+            // Se não houver mais palavras caindo, crie uma nova para manter o jogo ativo
+            criarNovaPalavra();
         }
     }
 });
