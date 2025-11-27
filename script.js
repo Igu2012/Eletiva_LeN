@@ -52,9 +52,8 @@ function obterPalavraAleatoria() {
     return listaPalavras[Math.floor(Math.random() * listaPalavras.length)];
 }
 
-// NOVO: Função para calcular o limite máximo de palavras
+// Função para calcular o limite máximo de palavras (5 + 1 a cada 20 PD)
 function calcularLimitePalavras() {
-    // Começa com 5 e aumenta 1 a cada 20 PD
     const limiteBase = 5;
     const aumento = Math.floor(contadorPD / 20);
     return limiteBase + aumento;
@@ -365,9 +364,8 @@ function configuracaoInicial() {
     mostrarRanking(); 
     TELA_FIM_JOGO.style.display = 'none';
     
-    // CORREÇÃO DO RANKING: Esconde o menu usando style.transform para permitir a animação de transição do CSS.
-    MENU_RANKING.style.transform = 'translateX(-100%)'; 
-    MENU_RANKING.classList.remove('visible');
+    // CORREÇÃO DO RANKING: O CSS agora é responsável por ocultar o menu inicialmente.
+    MENU_RANKING.classList.remove('visible'); 
     
     CONTAINER_ENTRADA_NOME.classList.remove('hidden');
     BOTAO_REINICIAR.classList.add('hidden');
