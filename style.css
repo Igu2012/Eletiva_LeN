@@ -163,11 +163,12 @@ body {
     position: absolute;
     top: 20px;
     left: 20px;
-    padding: 10px 15px;
+    padding: 10px; /* Padding ajustado para o ícone */
     border: 2px solid #333;
     background-color: #fff;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 1.5em; /* Tamanho do ícone maior */
+    line-height: 1; /* Alinhamento vertical do ícone */
     z-index: 100;
 }
 
@@ -181,8 +182,11 @@ body {
     border-right: 3px solid #333;
     box-shadow: 5px 0 10px rgba(0,0,0,0.3);
     padding: 20px;
+    
+    /* CORREÇÃO FINAL: Garante que o menu esteja oculto e fora da tela */
     transform: translateX(-100%); 
-    transition: transform 0.4s ease-out; 
+    transition: transform 0.4s ease-out, visibility 0.4s; 
+    visibility: hidden; /* Oculta completamente quando fora da tela */
     z-index: 99;
     
     display: flex;
@@ -191,6 +195,7 @@ body {
 
 #ranking-menu.visible {
     transform: translateX(0); 
+    visibility: visible; /* Torna visível ao deslizar */
 }
 
 #ranking-menu h3 {
