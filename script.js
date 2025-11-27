@@ -18,11 +18,8 @@ const CONTAINER_ENTRADA_NOME = document.getElementById('name-input-container');
 // --- CONSTANTES DE DIFICULDADE (AJUSTADAS) ---
 const INTERVALO_QUEDA_MS = 50;
 const VELOCIDADE_INICIAL_QUEDA = 2.0; 
-const INTERVALO_INICIAL_SPAWN_MS = 1800; // Tempo inicial um pouco maior
+const INTERVALO_INICIAL_SPAWN_MS = 1800;
 const DISTANCIA_MAXIMA_QUEDA = 600; 
-
-// NOVO LIMITE DE PALAVRAS NA TELA
-const LIMITE_PALAVRAS_TELA = 5; 
 
 let contadorPD = 0;
 let listaPalavras = [];
@@ -53,6 +50,14 @@ async function carregarDicionario() {
 
 function obterPalavraAleatoria() {
     return listaPalavras[Math.floor(Math.random() * listaPalavras.length)];
+}
+
+// NOVO: Função para calcular o limite máximo de palavras
+function calcularLimitePalavras() {
+    // Começa com 5 e aumenta 1 a cada 20 PD
+    const limiteBase = 5;
+    const aumento = Math.floor(contadorPD / 20);
+    return limiteBase + aumento;
 }
 
 function aumentarDificuldade() {
@@ -94,14 +99,15 @@ function iniciarJogo() {
     intervaloJogo = setInterval(animarQueda, INTERVALO_QUEDA_MS);
     intervaloSpawn = setInterval(criarNovaPalavra, intervaloSpawnAtual);
     
-    // CORREÇÃO DE FOCO: Garante que o input receba o foco após a inicialização
     setTimeout(() => INPUT_DIGITACAO.focus(), 50); 
 }
 
 function criarNovaPalavra() {
-    // NOVO: Verifica o limite de palavras na tela antes de criar
+    // Usa o limite de palavras dinâmico
+    const limiteAtual = calcularLimitePalavras();
     const palavrasAtivas = AREA_JOGO.querySelectorAll('.falling-word:not(.exploding)');
-    if (palavrasAtivas.length >= LIMITE_PALAVRAS_TELA) {
+    
+    if (palavrasAtivas.length >= limiteAtual) {
         return; // Não cria palavra se o limite for atingido
     }
     
@@ -146,8 +152,6 @@ function focarPalavra(elemento, texto) {
         span.textContent = char;
         DIV_PALAVRA_ALVO.appendChild(span);
     });
-    
-    // O foco principal é feito no iniciarJogo ou no processarPontuacao
 }
 
 function animarQueda() {
@@ -247,11 +251,10 @@ function processarPontuacao() {
     
     mostrarRanking(); 
     
-    // Oculta a entrada de nome e mostra o botão de reiniciar
     CONTAINER_ENTRADA_NOME.classList.add('hidden'); 
     BOTAO_REINICIAR.classList.remove('hidden'); 
 
-    // CORREÇÃO DO RANKING: Garante que o menu lateral apareça após salvar
+    // Garante que o menu lateral apareça após salvar
     MENU_RANKING.classList.add('visible'); 
     
     INPUT_DIGITACAO.focus();
@@ -334,7 +337,6 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
             const textoLimpo = palavrasNaoDigitadas[0].textContent.replace(/\s/g, '');
             focarPalavra(palavrasNaoDigitadas[0], textoLimpo);
         } else {
-            // Cria uma nova palavra se a lista estiver vazia
             criarNovaPalavra();
         }
     }
@@ -343,7 +345,6 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
 
 // --- Eventos de Ranking e Foco ---
 BOTAO_RANKING.addEventListener('click', () => {
-    // CORREÇÃO DO RANKING: O foco agora é garantido ao fechar o menu
     mostrarRanking();
     MENU_RANKING.classList.toggle('visible');
 });
@@ -356,7 +357,6 @@ BOTAO_FECHAR_RANKING.addEventListener('click', () => {
 BOTAO_REINICIAR.addEventListener('click', () => {
     TELA_FIM_JOGO.style.display = 'none';
     iniciarJogo();
-    // O foco já é chamado dentro de iniciarJogo, mas garantimos aqui também.
     setTimeout(() => INPUT_DIGITACAO.focus(), 50); 
 });
 
@@ -364,7 +364,11 @@ function configuracaoInicial() {
     carregarDicionario();
     mostrarRanking(); 
     TELA_FIM_JOGO.style.display = 'none';
+    
+    // CORREÇÃO DO RANKING: Esconde o menu usando style.transform para permitir a animação de transição do CSS.
+    MENU_RANKING.style.transform = 'translateX(-100%)'; 
     MENU_RANKING.classList.remove('visible');
+    
     CONTAINER_ENTRADA_NOME.classList.remove('hidden');
     BOTAO_REINICIAR.classList.add('hidden');
 }
