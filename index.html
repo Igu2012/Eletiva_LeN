@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palavras Caindo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button id="ranking-toggle-btn" title="Mostrar Colocação">🏆 PD</button>
+
+    <div id="game-container">
+        <div id="pd-display" title="Palavras Digitadas">PD: <span>0</span></div>
+        
+        <div id="game-area">
+        </div>
+
+        <div id="input-area">
+            <div id="target-word"></div>
+            <input type="text" id="typing-input" placeholder="Carregando palavras..." autofocus disabled>
+        </div>
+
+        <div id="game-over-screen">
+            <h2>FIM DE JOGO</h2>
+            <p>Palavras Digitadas (PD): <span id="final-pd">0</span></p>
+            
+            <div id="name-input-container">
+                <input type="text" id="player-name-input" placeholder="Seu nome para o Ranking">
+                <button id="save-score-btn">Salvar Pontuação</button>
+                <div id="censure-message" class="hidden">
+                    ❌ Não coloque nomes inapropriados.
+                </div>
+            </div>
+            
+            <button id="restart-btn" class="hidden">Reiniciar Jogo</button>
+        </div>
+    </div>
+    
+    <aside id="ranking-menu" class="hidden">
+        <h3>🏆 Colocação (PD)</h3>
+        <ol id="ranking-list"></ol>
+        <button id="close-ranking-btn">Fechar</button>
+    </aside>
+
+    <script src="script.js"></script>
+</body>
+</html>
