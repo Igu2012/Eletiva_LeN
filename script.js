@@ -16,14 +16,12 @@ const BOTAO_SALVAR_PONTUACAO = document.getElementById('save-score-btn');
 const MENSAGEM_CENSURA = document.getElementById('censure-message');
 const CONTAINER_ENTRADA_NOME = document.getElementById('name-input-container');
 
-// A LISTA DE CENSURA LOCAL
-const PALAVRAS_CENSURADAS = ['feio', 'bobo', 'chato', 'idiota', 'merda', 'puta', 'cuzão', 'foda-se', 'caralho', 'cu', 'bosta', 'viado'];
+// A LISTA DE CENSURA LOCAL (me desculpe pelas palavras)
+const PALAVRAS_CENSURADAS = ['feio', 'bobo', 'chato', 'idiota'];
 
 
 const INTERVALO_QUEDA_MS = 50;
-// >>> AUMENTANDO A VELOCIDADE INICIAL
 const VELOCIDADE_INICIAL_QUEDA = 2.0; 
-// >>> REDUZINDO O TEMPO DE SPAWN
 const INTERVALO_INICIAL_SPAWN_MS = 1500; 
 const DISTANCIA_MAXIMA_QUEDA = 600; 
 
@@ -59,7 +57,6 @@ function obterPalavraAleatoria() {
 }
 
 function aumentarDificuldade() {
-    // Ajusta a velocidade e o intervalo de spawn baseado na pontuação
     velocidadeQuedaAtual = Math.min(4.5, VELOCIDADE_INICIAL_QUEDA + Math.floor(contadorPD / 5) * 0.4); 
     
     const fatorReducao = Math.floor(contadorPD / 5) * 150;
@@ -82,7 +79,6 @@ function iniciarJogo() {
     INPUT_DIGITACAO.value = '';
     INPUT_DIGITACAO.placeholder = "";
     
-    // Configuração da tela de fim de jogo para a próxima vez
     CONTAINER_ENTRADA_NOME.classList.remove('hidden'); 
     BOTAO_REINICIAR.classList.add('hidden'); 
     MENSAGEM_CENSURA.classList.add('hidden'); 
@@ -197,11 +193,34 @@ function verificarCensuraLocal(nome) {
     return false;
 }
 
+/**
+ * Salva o resultado, atualizando o placar do jogador se for um novo recorde.
+ * @param {string} nome 
+ * @param {number} pontuacao 
+ */
 function salvarResultado(nome, pontuacao) {
-    dadosRanking = carregarRanking();
-    dadosRanking.push({ nome, totalPD: pontuacao });
+    let dadosRanking = carregarRanking();
+    
+    // 1. Encontra se o nome já existe
+    const indiceExistente = dadosRanking.findIndex(jogador => jogador.nome === nome);
+
+    if (indiceExistente !== -1) {
+        // O jogador existe: verifica se a nova pontuação é maior
+        if (pontuacao > dadosRanking[indiceExistente].totalPD) {
+            dadosRanking[indiceExistente].totalPD = pontuacao;
+        }
+    } else {
+        // O jogador não existe: adiciona nova entrada
+        dadosRanking.push({ nome, totalPD: pontuacao });
+    }
+
+    // 2. Classifica a lista completa (para que o novo recorde suba no ranking)
     dadosRanking.sort((a, b) => b.totalPD - a.totalPD);
+    
+    // 3. Limita o ranking aos 10 melhores
     dadosRanking = dadosRanking.slice(0, 10);
+    
+    // 4. Salva no armazenamento local
     localStorage.setItem('fallingWordsRanking', JSON.stringify(dadosRanking));
 }
 
@@ -238,7 +257,6 @@ function processarPontuacao() {
         return;
     }
     
-    // 1. Verificação de Censura Local
     const isCensurado = verificarCensuraLocal(nome);
 
     if (isCensurado) {
@@ -247,14 +265,12 @@ function processarPontuacao() {
         return;
     }
 
-    // 2. Se o nome é limpo, salva e mostra o ranking
     MENSAGEM_CENSURA.classList.add('hidden');
     
     if (contadorPD > 0) {
-        salvarResultado(nome, contadorPD);
+        salvarResultado(nome, contadorPD); // Chama a função que agora tem a lógica de recorde!
     }
     
-    // Correção: Garante que o menu de ranking seja exibido e o jogo não seja reiniciado
     mostrarRanking(); 
     MENU_RANKING.classList.add('visible'); 
     
@@ -340,7 +356,6 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
             const textoLimpo = palavrasNaoDigitadas[0].textContent.replace(/\s/g, '');
             focarPalavra(palavrasNaoDigitadas[0], textoLimpo);
         } else {
-            // Se não houver mais palavras caindo, crie uma nova para manter o jogo ativo
             criarNovaPalavra();
         }
     }
