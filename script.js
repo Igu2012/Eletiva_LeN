@@ -13,11 +13,8 @@ const BOTAO_REINICIAR = document.getElementById('restart-btn');
 // ELEMENTOS para a interface de nome
 const INPUT_NOME_JOGADOR = document.getElementById('player-name-input');
 const BOTAO_SALVAR_PONTUACAO = document.getElementById('save-score-btn');
-const MENSAGEM_CENSURA = document.getElementById('censure-message');
+// Elementos de censura (MENSAGEM_CENSURA) e a lista (PALAVRAS_CENSURADAS) foram removidos.
 const CONTAINER_ENTRADA_NOME = document.getElementById('name-input-container');
-
-// A LISTA DE CENSURA LOCAL (me desculpe pelas palavras)
-const PALAVRAS_CENSURADAS = ['feio', 'bobo', 'chato', 'idiota'];
 
 
 const INTERVALO_QUEDA_MS = 50;
@@ -81,7 +78,6 @@ function iniciarJogo() {
     
     CONTAINER_ENTRADA_NOME.classList.remove('hidden'); 
     BOTAO_REINICIAR.classList.add('hidden'); 
-    MENSAGEM_CENSURA.classList.add('hidden'); 
     INPUT_NOME_JOGADOR.value = ''; 
 
     Array.from(AREA_JOGO.querySelectorAll('.falling-word')).forEach(el => el.remove());
@@ -180,18 +176,9 @@ function fimDeJogo() {
     INPUT_NOME_JOGADOR.focus();
 }
 
-// --- FUNÇÕES DE RANKING E CENSURA LOCAL ---
+// --- FUNÇÕES DE RANKING ---
 
-function verificarCensuraLocal(nome) {
-    const nomeLowerCase = nome.toLowerCase().replace(/[^a-z0-9]/g, ''); 
-    
-    for (const palavra of PALAVRAS_CENSURADAS) {
-        if (nomeLowerCase.includes(palavra)) {
-            return true;
-        }
-    }
-    return false;
-}
+// Função verificarCensuraLocal removida.
 
 /**
  * Salva o resultado, atualizando o placar do jogador se for um novo recorde.
@@ -252,23 +239,15 @@ function processarPontuacao() {
     const nome = INPUT_NOME_JOGADOR.value.trim();
 
     if (nome === "") {
-        MENSAGEM_CENSURA.textContent = "Digite um nome para salvar sua pontuação.";
-        MENSAGEM_CENSURA.classList.remove('hidden');
+        // Usa um alert simples para a validação de campo vazio.
+        alert("Digite um nome para salvar sua pontuação."); 
         return;
     }
     
-    const isCensurado = verificarCensuraLocal(nome);
+    // Toda a lógica de verificação de censura foi removida.
 
-    if (isCensurado) {
-        MENSAGEM_CENSURA.textContent = "❌ Não coloque nomes inapropriados.";
-        MENSAGEM_CENSURA.classList.remove('hidden');
-        return;
-    }
-
-    MENSAGEM_CENSURA.classList.add('hidden');
-    
     if (contadorPD > 0) {
-        salvarResultado(nome, contadorPD); // Chama a função que agora tem a lógica de recorde!
+        salvarResultado(nome, contadorPD);
     }
     
     mostrarRanking(); 
