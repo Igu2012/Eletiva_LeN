@@ -13,14 +13,16 @@ const BOTAO_REINICIAR = document.getElementById('restart-btn');
 // ELEMENTOS para a interface de nome
 const INPUT_NOME_JOGADOR = document.getElementById('player-name-input');
 const BOTAO_SALVAR_PONTUACAO = document.getElementById('save-score-btn');
-// Elementos de censura (MENSAGEM_CENSURA) e a lista (PALAVRAS_CENSURADAS) foram removidos.
 const CONTAINER_ENTRADA_NOME = document.getElementById('name-input-container');
 
-
+// --- CONSTANTES DE DIFICULDADE (AJUSTADAS) ---
 const INTERVALO_QUEDA_MS = 50;
 const VELOCIDADE_INICIAL_QUEDA = 2.0; 
-const INTERVALO_INICIAL_SPAWN_MS = 1500; 
+const INTERVALO_INICIAL_SPAWN_MS = 1800; // Tempo inicial um pouco maior
 const DISTANCIA_MAXIMA_QUEDA = 600; 
+
+// NOVO LIMITE DE PALAVRAS NA TELA
+const LIMITE_PALAVRAS_TELA = 5; 
 
 let contadorPD = 0;
 let listaPalavras = [];
@@ -54,10 +56,12 @@ function obterPalavraAleatoria() {
 }
 
 function aumentarDificuldade() {
-    velocidadeQuedaAtual = Math.min(4.5, VELOCIDADE_INICIAL_QUEDA + Math.floor(contadorPD / 5) * 0.4); 
+    // Aumento de velocidade mais suave
+    velocidadeQuedaAtual = Math.min(3.5, VELOCIDADE_INICIAL_QUEDA + Math.floor(contadorPD / 10) * 0.2); 
     
-    const fatorReducao = Math.floor(contadorPD / 5) * 150;
-    intervaloSpawnAtual = Math.max(700, INTERVALO_INICIAL_SPAWN_MS - fatorReducao);
+    // Redução de spawn mais suave e com limite
+    const fatorReducao = Math.floor(contadorPD / 8) * 100;
+    intervaloSpawnAtual = Math.max(1000, INTERVALO_INICIAL_SPAWN_MS - fatorReducao);
     
     clearInterval(intervaloSpawn);
     intervaloSpawn = setInterval(criarNovaPalavra, intervaloSpawnAtual);
@@ -89,10 +93,18 @@ function iniciarJogo() {
     criarNovaPalavra();
     intervaloJogo = setInterval(animarQueda, INTERVALO_QUEDA_MS);
     intervaloSpawn = setInterval(criarNovaPalavra, intervaloSpawnAtual);
-    INPUT_DIGITACAO.focus();
+    
+    // CORREÇÃO DE FOCO: Garante que o input receba o foco após a inicialização
+    setTimeout(() => INPUT_DIGITACAO.focus(), 50); 
 }
 
 function criarNovaPalavra() {
+    // NOVO: Verifica o limite de palavras na tela antes de criar
+    const palavrasAtivas = AREA_JOGO.querySelectorAll('.falling-word:not(.exploding)');
+    if (palavrasAtivas.length >= LIMITE_PALAVRAS_TELA) {
+        return; // Não cria palavra se o limite for atingido
+    }
+    
     const palavraTexto = obterPalavraAleatoria();
     const divPalavra = document.createElement('div');
     divPalavra.classList.add('falling-word');
@@ -135,7 +147,7 @@ function focarPalavra(elemento, texto) {
         DIV_PALAVRA_ALVO.appendChild(span);
     });
     
-    INPUT_DIGITACAO.focus();
+    // O foco principal é feito no iniciarJogo ou no processarPontuacao
 }
 
 function animarQueda() {
@@ -178,36 +190,21 @@ function fimDeJogo() {
 
 // --- FUNÇÕES DE RANKING ---
 
-// Função verificarCensuraLocal removida.
-
-/**
- * Salva o resultado, atualizando o placar do jogador se for um novo recorde.
- * @param {string} nome 
- * @param {number} pontuacao 
- */
 function salvarResultado(nome, pontuacao) {
     let dadosRanking = carregarRanking();
     
-    // 1. Encontra se o nome já existe
     const indiceExistente = dadosRanking.findIndex(jogador => jogador.nome === nome);
 
     if (indiceExistente !== -1) {
-        // O jogador existe: verifica se a nova pontuação é maior
         if (pontuacao > dadosRanking[indiceExistente].totalPD) {
             dadosRanking[indiceExistente].totalPD = pontuacao;
         }
     } else {
-        // O jogador não existe: adiciona nova entrada
         dadosRanking.push({ nome, totalPD: pontuacao });
     }
 
-    // 2. Classifica a lista completa (para que o novo recorde suba no ranking)
     dadosRanking.sort((a, b) => b.totalPD - a.totalPD);
-    
-    // 3. Limita o ranking aos 10 melhores
     dadosRanking = dadosRanking.slice(0, 10);
-    
-    // 4. Salva no armazenamento local
     localStorage.setItem('fallingWordsRanking', JSON.stringify(dadosRanking));
 }
 
@@ -239,22 +236,24 @@ function processarPontuacao() {
     const nome = INPUT_NOME_JOGADOR.value.trim();
 
     if (nome === "") {
-        // Usa um alert simples para a validação de campo vazio.
         alert("Digite um nome para salvar sua pontuação."); 
+        INPUT_NOME_JOGADOR.focus();
         return;
     }
     
-    // Toda a lógica de verificação de censura foi removida.
-
     if (contadorPD > 0) {
         salvarResultado(nome, contadorPD);
     }
     
     mostrarRanking(); 
-    MENU_RANKING.classList.add('visible'); 
     
+    // Oculta a entrada de nome e mostra o botão de reiniciar
     CONTAINER_ENTRADA_NOME.classList.add('hidden'); 
     BOTAO_REINICIAR.classList.remove('hidden'); 
+
+    // CORREÇÃO DO RANKING: Garante que o menu lateral apareça após salvar
+    MENU_RANKING.classList.add('visible'); 
+    
     INPUT_DIGITACAO.focus();
 }
 
@@ -335,6 +334,7 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
             const textoLimpo = palavrasNaoDigitadas[0].textContent.replace(/\s/g, '');
             focarPalavra(palavrasNaoDigitadas[0], textoLimpo);
         } else {
+            // Cria uma nova palavra se a lista estiver vazia
             criarNovaPalavra();
         }
     }
@@ -343,6 +343,7 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
 
 // --- Eventos de Ranking e Foco ---
 BOTAO_RANKING.addEventListener('click', () => {
+    // CORREÇÃO DO RANKING: O foco agora é garantido ao fechar o menu
     mostrarRanking();
     MENU_RANKING.classList.toggle('visible');
 });
@@ -355,7 +356,8 @@ BOTAO_FECHAR_RANKING.addEventListener('click', () => {
 BOTAO_REINICIAR.addEventListener('click', () => {
     TELA_FIM_JOGO.style.display = 'none';
     iniciarJogo();
-    INPUT_DIGITACAO.focus(); 
+    // O foco já é chamado dentro de iniciarJogo, mas garantimos aqui também.
+    setTimeout(() => INPUT_DIGITACAO.focus(), 50); 
 });
 
 function configuracaoInicial() {
