@@ -364,7 +364,7 @@ function configuracaoInicial() {
     mostrarRanking(); 
     TELA_FIM_JOGO.style.display = 'none';
     
-    // CORREÇÃO DO RANKING: O CSS agora é responsável por ocultar o menu inicialmente.
+    // Assegura que a classe 'visible' não esteja presente no início
     MENU_RANKING.classList.remove('visible'); 
     
     CONTAINER_ENTRADA_NOME.classList.remove('hidden');
