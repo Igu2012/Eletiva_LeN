@@ -1,33 +1,87 @@
-import random
-import json
-
-# 1. Carregue a lista de palavras (certifique-se de que o arquivo TXT está na mesma pasta)
-try:
-    with open('br-sem-acentos.txt', 'r', encoding='utf-8') as f:
-        palavras_brutas = f.read().splitlines()
-except FileNotFoundError:
-    print("Erro: O arquivo 'br-sem-acentos.txt' não foi encontrado. Baixe-o da URL da IME-USP.")
-    exit()
-
-# 2. Filtre e Limpe:
-# - Remove palavras com caracteres não-alfabéticos (pontuação, números, etc.)
-# - Remove palavras muito longas (Ex: Max 12 letras)
-palavras_limpas = [
-    p.lower() 
-    for p in palavras_brutas 
-    if p.isalpha() and len(p) >= 3 and len(p) <= 12
+[
+    "casa", "vida", "amor", "paz", "luz", "fogo", "água", "vento", "chuva", "terra",
+    "tempo", "noite", "dia", "mês", "ano", "semana", "hoje", "ontem", "agora", "sempre",
+    "falar", "dizer", "ouvir", "ver", "saber", "fazer", "dar", "ter", "ser", "estar",
+    "ir", "vir", "poder", "querer", "dever", "cair", "subir", "descer", "pular", "correr",
+    "andar", "sentar", "abrir", "fechar", "mudar", "jogar", "ganhar", "perder", "comer", "beber",
+    "amigo", "gente", "coisa", "carro", "trem", "avião", "navio", "livro", "escola", "trabalho",
+    "mesa", "cadeira", "copo", "prato", "doce", "salgado", "claro", "escuro", "verde", "azul",
+    "vermelho", "preto", "branco", "quente", "frio", "macio", "duro", "velho", "novo", "grande",
+    "pequeno", "forte", "fraco", "rápido", "lento", "feliz", "triste", "calmo", "bravo", "certo",
+    "errado", "fácil", "difícil", "bom", "mau", "muito", "pouco", "nenhum", "algum", "outro",
+    "pensar", "buscar", "pegar", "deixar", "ligar", "vender", "comprar", "pagar", "cobrar", "receber",
+    "construir", "criar", "trocar", "consertar", "estudar", "aprender", "ensinar", "treinar", "lembrar",
+    "esquecer", "decidir", "começar", "terminar", "continuar", "vencer", "sortear", "punição", "avisar",
+    "pedir", "oferecer", "aceitar", "recusar", "explicar", "entender", "conhecer", "sentir", "esperar", "ajudar",
+    "chamar", "levar", "trazer", "devolver", "guardar", "procurar", "achar", "descobrir", "esconder", "sumir",
+    "voltar", "chegar", "partir", "viajar", "morar", "viver", "morrer", "nascer", "crescer", "sonhar",
+    "acordar", "dormir", "descansar", "relaxar", "cansar", "lavar", "limpar", "sujar", "molhar", "secar",
+    "pintar", "desenhar", "escrever", "digitar", "copiar", "colar", "ler", "imaginar", "aconselhar", "prestar",
+    "entregar", "montar", "desmontar", "medir", "pesar", "contar", "dividir", "somar", "subtrair", "calcular",
+    "gastar", "economizar", "investir", "arriscar", "provar", "lutar", "defender", "atacar", "parar", "seguir",
+    "quente", "gelado", "morno", "fresco", "úmido", "seco", "liso", "áspero", "macio", "fofo",
+    "alto", "baixo", "largo", "estreito", "curto", "longo", "sujo", "limpo", "vazio", "cheio",
+    "raro", "comum", "simples", "complexo", "barato", "caro", "útil", "inútil", "sincero",
+    "falso", "calmo", "nervoso", "ansioso", "paciente", "doente", "saudável", "esperto", "burro", "tímido",
+    "extrovertido", "corajoso", "medroso", "rico", "pobre", "básico", "avançado", "melhor", "pior", "justo",
+    "injusto", "sério", "engraçado", "bonito", "feio", "enorme", "médio", "igual", "diferente",
+    "primeiro", "último", "principal", "secundário", "famoso", "desconhecido", "público", "privado", "livre", "preso",
+    "cheiroso", "fedorento", "gostoso", "ruim", "telefone", "computador", "monitor", "teclado", "mouse",
+    "internet", "janela", "porta", "parede", "teto", "chave", "carteira", "moeda", "dinheiro", "banco",
+    "rua", "cidade", "estado", "país", "mundo", "pão", "leite", "fruta", "açúcar", "sal",
+    "café", "chá", "suco", "refrigerante", "caneta", "lápis", "borracha", "papel",
+    "revista", "jornal", "carta", "e-mail", "mensagem", "roupa", "sapato", "meia", "cinto", "chapéu",
+    "óculos", "relógio", "pulseira", "anel", "colar", "floresta", "montanha", "oceano", "rio", "praia",
+    "pedra", "areia", "grama", "árvore", "flor", "animal", "peixe", "pássaro", "cachorro", "gato",
+    "pessoa", "família", "casal", "bebê", "criança", "adulto", "idoso", "amizade", "saudade", "lembrança",
+    "futuro", "passado", "presente", "dúvida", "certeza", "razão", "emoção", "sentido", "esforço", "vantagem",
+    "desvantagem", "sucesso", "fracasso", "erro", "meta", "objetivo", "resposta", "pergunta", "notícia", "história",
+    "sistema", "programa", "código", "dados", "arquivo", "pasta", "servidor", "rede", "wi-fi", "login",
+    "história", "arte", "cultura", "ciência", "esporte", "política", "economia", "direito", "filosofia", "teologia",
+    "matemática", "física", "química", "biologia", "geografia", "astrônomo", "geólogo", "meteorito", "ecologia", "ambiente",
+    "oceano", "mar", "ilha", "costa", "deserto", "selva", "montanha", "colina",
+    "vale", "lago", "cascata", "rocha", "solo", "gramado", "semente", "raiz", "folha", "galho",
+    "tronco", "inseto", "réptil", "mamífero", "aquático", "terrestre", "aéreo", "doméstico", "selvagem", "jardim",
+    "fazenda", "pastor", "agricultor", "pescador", "caçador", "cozinheiro", "padeiro", "garçom", "motorista", "piloto",
+    "mecânico", "encanador", "eletricista", "pedreiro", "arquiteto", "engenheiro", "professor", "aluno", "dentista", "enfermeiro",
+    "farmácia", "terapeuta", "advogado", "juiz", "delegado", "soldado", "bombeiro", "marinheiro", "jornalista", "escritor",
+    "artista", "músico", "ator", "cantor", "dançarino", "modelo", "fotógrafo", "câmera", "produtor", "diretor",
+    "roteiro", "cena", "palco", "teatro", "cinema", "pintura", "escultura", "desenho", "música", "dança",
+    "viagem", "turismo", "hotel", "reserva", "aeroporto", "rodovia", "bicicleta", "ônibus", "táxi", "metrô",
+    "avenida", "praça", "parque", "bairro", "centro", "periferia", "região", "fronteira", "continente",
+    "global", "local", "nacional", "regional", "pessoal", "coletivo", "individual", "social", "familiar",
+    "casamento", "divórcio", "filho", "irmão", "primo", "tio", "avô", "neto", "bisavô", "parentes",
+    "colega", "vizinho", "chefe", "funcionário", "cliente", "fornecedor", "concorrência", "negócio", "mercado",
+    "venda", "compra", "oferta", "demanda", "preço", "custo", "lucro", "imposto", "salário", "riqueza",
+    "pobreza", "miséria", "saúde", "doença", "cura", "remédio", "cirurgia", "exame", "diagnóstico", "sintoma",
+    "dor", "febre", "alegria", "tristeza", "medo", "raiva", "esperança", "coragem", "orgulho", "humildade",
+    "sinceridade", "mentira", "verdade", "debate", "acordo", "conflito",
+    "perdão", "culpa", "inocente", "obrigação", "direito",
+    "dever", "regra", "lei", "norma", "padrão", "exceção", "limite", "começo", "meio", "final",
+    "instante", "minuto", "hora", "século", "amanhecer", "entardecer", "madrugada", "manhã", "tarde",
+    "depois", "antes", "àsvezes", "raramente", "frequentemente", "rapidamente", "lentamente", "facilmente", "dificilmente", "totalmente", "parcialmente",
+    "software", "hardware", "processador", "memória", "disco", "bateria", "carregador", "cabo", "fio", "tomada",
+    "eletricidade", "energia", "motor", "máquina", "ferramenta", "aparelho", "dispositivo", "robô", "automação", "digital",
+    "analógico", "virtual", "realidade", "imagem", "vídeo", "áudio", "som", "microfone", "altofalante", "câmera",
+    "tela", "impressora", "scanner", "celular", "chamada",
+    "aplicativo", "interface", "registro", "notificação", "atualização", "backup", "segurança",
+    "criptografia", "firewall", "vírus", "hacker", "programador", "desenvolvedor", "projeto", "protótipo",
+    "solução", "melhoria", "inovação", "tendência", "moda", "estilo", "beleza", "perfume", "cosmético",
+    "espelho", "pente", "escova", "banho", "sabonete", "shampoo", "toalha", "chuveiro", "sanitário", "cozinha",
+    "fogão", "geladeira", "micro-ondas", "liquidificador", "batedeira", "talher", "panela", "xícara", "louça",
+    "móvel", "sofá", "cama", "travesseiro", "cobertor", "cortina", "tapete", "quadro", "vaso", "planta",
+    "caminho", "estrada", "ponte", "túnel", "trilha", "pista", "calçada", "semáforo", "placa", "sinal",
+    "velocidade", "distância", "altura", "largura", "profundidade", "peso", "medida", "quilômetro", "metro", "centímetro",
+    "grama", "quilo", "litro", "volume", "superfície", "forma", "sabor", "cheiro", "textura",
+    "visão", "audição", "olfato", "paladar", "tato", "mente", "cabeça", "braço",
+    "perna", "mão", "pé", "dedo", "unha", "cabelo", "pele", "sangue", "osso", "músculo",
+    "coração", "pulmão", "estômago", "fígado", "rim", "cérebro", "nervoso", "respiração", "digestão", "circulação",
+    "pensamento", "raciocínio", "imaginação", "criatividade", "motivação", "disciplina", "hábito", "rotina", "organização",
+    "planejamento", "conquista", "sucesso", "fracasso", "derrota", "vitória", "sacrifício",
+    "benefício", "disponível", "necessário", "suficiente", "excesso", "escassez", "abundância",
+    "consumo", "produção", "distribuição", "comércio", "serviço", "qualidade", "garantia", "defeito", "reparo", "troca",
+    "devolução", "reembolso", "atendimento", "reclamação", "elogio", "sugestão", "comentário", "feedback", "pesquisa",
+    "entrevista", "relatório", "documento", "formato", "modelo", "versão", "original", "cópia", "autêntico", "falso",
+    "mistério", "segredo", "fantasia", "magia", "milagre", "religião", "fé", "crença", "deus", "anjo",
+    "demônio", "céu", "inferno", "paraíso", "eterno", "infinito", "limitado", "circular", "quadrado", "triângulo"
 ]
-
-# 3. Selecione 10.000 palavras aleatoriamente (se disponíveis)
-num_desejado = 10000
-if len(palavras_limpas) > num_desejado:
-    palavras_finais = random.sample(palavras_limpas, num_desejado)
-else:
-    palavras_finais = palavras_limpas
-    print(f"Atenção: Apenas {len(palavras_limpas)} palavras foram encontradas após o filtro.")
-
-# 4. Salve no formato JSON
-with open('dicionario_pt.json', 'w', encoding='utf-8') as f:
-    json.dump(palavras_finais, f, indent=4, ensure_ascii=False)
-
-print(f"Sucesso! {len(palavras_finais)} palavras salvas em 'dicionario_pt.json'.")
