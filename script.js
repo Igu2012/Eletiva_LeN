@@ -19,7 +19,12 @@ const CONTAINER_ENTRADA_NOME = document.getElementById('name-input-container');
 const INTERVALO_QUEDA_MS = 50;
 const VELOCIDADE_INICIAL_QUEDA = 2.0; 
 const INTERVALO_INICIAL_SPAWN_MS = 1800;
+// DISTÂNCIA MÁXIMA ajustada para o topo da área de input (700px - 100px)
 const DISTANCIA_MAXIMA_QUEDA = 600; 
+
+// --- Variáveis de Áudio ---
+const audioError = new Audio('error.mp3');
+const audioFinished = new Audio('finished.mp3'); 
 
 let contadorPD = 0;
 let listaPalavras = [];
@@ -31,7 +36,14 @@ let dadosRanking = [];
 let velocidadeQuedaAtual = VELOCIDADE_INICIAL_QUEDA;
 let intervaloSpawnAtual = INTERVALO_INICIAL_SPAWN_MS;
 
+
 // --- FUNÇÕES DE LÓGICA DO JOGO ---
+
+// Função auxiliar para tocar o áudio instantaneamente
+function playSound(audioElement) {
+    audioElement.currentTime = 0; 
+    audioElement.play().catch(e => console.error("Erro ao tocar áudio:", e));
+}
 
 async function carregarDicionario() {
     try {
@@ -165,6 +177,7 @@ function animarQueda() {
             dadosPalavraAtual.y = topoAtual;
         }
 
+        // FIM DE JOGO: Se o topoAtual atingir ou passar do limite
         if (topoAtual >= DISTANCIA_MAXIMA_QUEDA) {
             if (elemento === dadosPalavraAtual?.elemento) {
                 fimDeJogo();
@@ -179,6 +192,9 @@ function fimDeJogo() {
     clearInterval(intervaloJogo);
     clearInterval(intervaloSpawn);
     jogoRodando = false;
+    
+    // Toca o som de finalização do jogo
+    playSound(audioFinished); 
 
     Array.from(AREA_JOGO.querySelectorAll('.falling-word')).forEach(el => el.remove());
     dadosPalavraAtual = null;
@@ -300,6 +316,9 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
                 spansCaindo[i].classList.remove('correct');
                 spansAlvo[i].classList.add('incorrect');
                 
+                // Toca o som de erro
+                playSound(audioError); 
+                
                 dadosPalavraAtual.elemento.style.animation = 'shake 0.1s ease-in-out';
                 setTimeout(() => dadosPalavraAtual.elemento.style.animation = '', 100); 
                 e.target.value = entrada.slice(0, i); 
@@ -314,6 +333,9 @@ INPUT_DIGITACAO.addEventListener('input', (e) => {
     dadosPalavraAtual.elemento.style.opacity = Math.min(1, 0.25 + (0.75 * (contagemCorreta / textoAlvo.length)));
 
     if (contagemCorreta === textoAlvo.length) {
+        // Toca o som de palavra finalizada
+        playSound(audioFinished); 
+        
         contadorPD++;
         DISPLAY_PD.textContent = contadorPD;
         aumentarDificuldade();
@@ -364,7 +386,6 @@ function configuracaoInicial() {
     mostrarRanking(); 
     TELA_FIM_JOGO.style.display = 'none';
     
-    // Assegura que a classe 'visible' não esteja presente no início
     MENU_RANKING.classList.remove('visible'); 
     
     CONTAINER_ENTRADA_NOME.classList.remove('hidden');
