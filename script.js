@@ -15,14 +15,15 @@ const INPUT_NOME_JOGADOR = document.getElementById('player-name-input');
 const BOTAO_SALVAR_PONTUACAO = document.getElementById('save-score-btn');
 const CONTAINER_ENTRADA_NOME = document.getElementById('name-input-container');
 
-// --- CONSTANTES DE DIFICULDADE (AJUSTADAS) ---
+// --- CONSTANTES DE DIFICULDADE ---
 const INTERVALO_QUEDA_MS = 50;
 const VELOCIDADE_INICIAL_QUEDA = 2.0; 
 const INTERVALO_INICIAL_SPAWN_MS = 1800;
-// DISTÂNCIA MÁXIMA ajustada para o topo da área de input (700px - 100px)
+// 600px é o limite exato para o topo da área de input (700px altura total - 100px input area)
 const DISTANCIA_MAXIMA_QUEDA = 600; 
 
 // --- Variáveis de Áudio ---
+// Certifique-se de que estes arquivos (.mp3) estão na mesma pasta
 const audioError = new Audio('error.mp3');
 const audioFinished = new Audio('finished.mp3'); 
 
@@ -50,12 +51,20 @@ async function carregarDicionario() {
         const resposta = await fetch('dicionario_pt.json'); 
         if (!resposta.ok) throw new Error(`Erro ao carregar dicionário: ${resposta.status}`);
         listaPalavras = await resposta.json(); 
+        
+        // Se a lista estiver vazia (JSON mal formado), força erro
+        if (listaPalavras.length === 0) {
+            throw new Error('O arquivo JSON está vazio ou mal formatado.');
+        }
+
         INPUT_DIGITACAO.placeholder = "Pressione ENTER para começar";
         INPUT_DIGITACAO.disabled = false;
         INPUT_DIGITACAO.focus();
 
     } catch (erro) {
-        INPUT_DIGITACAO.placeholder = "ERRO: Falha ao carregar palavras.";
+        // Se houver erro, exibe a mensagem de falha
+        console.error("Erro detalhado ao carregar dicionário:", erro);
+        INPUT_DIGITACAO.placeholder = "ERRO: Falha ao carregar palavras. (Verifique 'dicionario_pt.json')";
         INPUT_DIGITACAO.disabled = true;
     }
 }
@@ -85,6 +94,7 @@ function aumentarDificuldade() {
 
 function iniciarJogo() {
     if (jogoRodando) return;
+    if (listaPalavras.length === 0) return; // Não inicia se não houver palavras carregadas
 
     contadorPD = 0;
     DISPLAY_PD.textContent = contadorPD;
@@ -96,6 +106,7 @@ function iniciarJogo() {
     INPUT_DIGITACAO.value = '';
     INPUT_DIGITACAO.placeholder = "";
     
+    // Mostra o container de nome novamente, caso o jogo seja reiniciado
     CONTAINER_ENTRADA_NOME.classList.remove('hidden'); 
     BOTAO_REINICIAR.classList.add('hidden'); 
     INPUT_NOME_JOGADOR.value = ''; 
@@ -177,7 +188,6 @@ function animarQueda() {
             dadosPalavraAtual.y = topoAtual;
         }
 
-        // FIM DE JOGO: Se o topoAtual atingir ou passar do limite
         if (topoAtual >= DISTANCIA_MAXIMA_QUEDA) {
             if (elemento === dadosPalavraAtual?.elemento) {
                 fimDeJogo();
